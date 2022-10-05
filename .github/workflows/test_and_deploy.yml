@@ -58,18 +58,21 @@ jobs:
         if: runner.os == 'macOS' && matrix.python-version == '3.9'
         run: pip install tox-conda
 
-      - name: Test with tox
-        run: |
-          if [ "$RUNNER_OS" == "Linux" ] ; then
-            Xvfb :99 -screen 0 1024x768x24 & sleep 3
+      - name: Test with tox (Xvfb)
+        if: runner.os == 'Linux'
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: |
             herbstluftwm & sleep 1
             python -m tox -vv
-          else
-            python -m tox -vv
-          fi
-        shell: bash
         env:
-          DISPLAY: ":99"
+          PLATFORM: ${{ matrix.platform }}
+          PYVISTA_OFF_SCREEN: True
+
+      - name: Test with tox
+        if: runner.os != 'Linux'
+        run: python -m tox -vv
+        env:
           PLATFORM: ${{ matrix.platform }}
           PYVISTA_OFF_SCREEN: True
 
